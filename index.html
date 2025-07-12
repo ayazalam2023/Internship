@@ -42,6 +42,17 @@
         .message-box.error {
             @apply bg-red-100 text-red-800 border border-red-300;
         }
+        .image-placeholder {
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px; /* Adjust as needed */
+            color: #757575;
+            font-style: italic;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
     </style>
 </head>
 <body class="flex flex-col items-center py-8 px-4">
@@ -162,28 +173,21 @@
             </p>
         </section>
 
-        <!-- Image Generation Section -->
+        <!-- Your Custom Image Section -->
         <section class="mb-12">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6 section-title">Our Team in Action</h2>
-            <div class="bg-gray-50 rounded-lg shadow-md p-6 text-center">
-                <h3 class="text-xl font-semibold text-gray-700 mb-4"></h3>
-                <div id="loadingPeople" class="flex justify-center items-center h-48">
-                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 loading-spinner"></div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 section-title">Our Visuals</h2>
+            <div class="bg-gray-50 rounded-lg shadow-md p-6 space-y-6">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Our Team in Action</h3>
+                    <!-- Paste your team image link here in the src attribute -->
+                    <img src="https://img.freepik.com/premium-photo/group-asian-students-studying-together-classroom-using-laptop_368093-8846.jpg" alt="Our Team Working" class="w-full h-auto rounded-lg shadow-md mt-4">
+                    
                 </div>
-                <img src="https://img.freepik.com/premium-photo/group-asian-students-studying-together-classroom-using-laptop_368093-8846.jpg" class="hidden w-full h-auto rounded-lg shadow-md mt-6" alt="People working on laptops">
-                <p id="errorPeopleText" class="text-red-500 mt-4 hidden"></p>
-            </div>
-        </section>
-
-        <section class="mb-12">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6 section-title">Your Future Certificate</h2>
-            <div class="bg-gray-50 rounded-lg shadow-md p-6 text-center">
-                <h3 class="text-xl font-semibold text-gray-700 mb-4">Certificate Template Preview</h3>
-                <div id="loadingCertificate" class="flex justify-center items-center h-48">
-                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 loading-spinner"></div>
-                </div>
-                <img src="https://craftmypdf.s3.ap-southeast-1.amazonaws.com/apps/certs-v2/cert-v2-template-05.png" class="hidden w-full h-auto rounded-lg shadow-md mt-6" alt="Internship Certificate Template">
-                <p id="errorCertificateText" class="text-red-500 mt-4 hidden"></p>
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Certificate Lookalike</h3>
+                    <!-- Paste your certificate image link here in the src attribute -->
+                    <img src="https://craftmypdf.s3.ap-southeast-1.amazonaws.com/apps/certs-v2/cert-v2-template-05.png" alt="Certificate Template" class="w-full h-auto rounded-lg shadow-md mt-4">
+                    </div>
             </div>
         </section>
 
@@ -198,7 +202,7 @@
         // Firebase imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         let app;
         let db;
@@ -317,9 +321,7 @@
             applicationsList.innerHTML = ''; // Clear previous list
 
             const applicationsCollectionRef = collection(db, `artifacts/${appId}/public/data/internship_applications`);
-            // Note: orderBy is commented out as per instructions to avoid index issues.
-            // Data will be sorted in memory if needed.
-            const q = query(applicationsCollectionRef); // Removed orderBy(timestamp, 'desc')
+            const q = query(applicationsCollectionRef);
 
             onSnapshot(q, (snapshot) => {
                 loadingApplications.classList.add('hidden');
@@ -337,7 +339,7 @@
                         <h4 class="text-xl font-semibold text-blue-800">${data.fullName}</h4>
                         <p class="text-gray-700"><strong>Email:</strong> ${data.personalMail}</p>
                         <p class="text-gray-700"><strong>University:</strong> ${data.universityName}</p>
-                        <p class="text-700"><strong>Domain:</strong> ${data.domain}</p>
+                        <p class="text-gray-700"><strong>Domain:</strong> ${data.domain}</p>
                         <p class="text-gray-700"><strong>Course:</strong> ${data.course} (${data.specialization})</p>
                         <p class="text-gray-700"><strong>Year:</strong> ${data.year}</p>
                         <p class="text-gray-700"><strong>Duration:</strong> ${data.duration}</p>
@@ -352,73 +354,11 @@
             });
         }
 
-        // Function to generate and display an image
-        async function generateAndDisplayImage(prompt, loadingElementId, imageElementId, errorElementId) {
-            const loadingElement = document.getElementById(loadingElementId);
-            const generatedImageElement = document.getElementById(imageElementId);
-            const errorTextElement = document.getElementById(errorElementId);
-
-            loadingElement.classList.remove('hidden');
-            generatedImageElement.classList.add('hidden');
-            errorTextElement.classList.add('hidden');
-
-            try {
-                const payload = { instances: { prompt: prompt }, parameters: { "sampleCount": 1} };
-                const apiKey = ""; // If you want to use models other than imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                // Check if the response was successful (status 200-299)
-                if (!response.ok) {
-                    const errorBody = await response.text(); // Read response as text for debugging
-                    throw new Error(`API request failed with status ${response.status}: ${errorBody}`);
-                }
-
-                const result = await response.json();
-
-                if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
-                    const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-                    generatedImageElement.src = imageUrl;
-                    generatedImageElement.classList.remove('hidden');
-                } else {
-                    errorTextElement.textContent = `Failed to generate image: No predictions or image data found for "${prompt.substring(0, 50)}..."`;
-                    errorTextElement.classList.remove('hidden');
-                }
-            } catch (error) {
-                console.error(`Error generating image for "${prompt.substring(0, 50)}...":`, error);
-                errorTextElement.textContent = `Error generating image: ${error.message}`;
-                errorTextElement.classList.remove('hidden');
-            } finally {
-                loadingElement.classList.add('hidden');
-            }
-        }
-
         // Event listeners and initial calls
         window.onload = function() {
             initializeFirebase(); // Initialize Firebase first
 
             form.addEventListener('submit', submitApplication);
-
-            // Generate "People Working" image
-            generateAndDisplayImage(
-                "A diverse group of young professionals working collaboratively on laptops in a modern, bright office environment. They are focused and engaged, with a positive and productive atmosphere. The image should convey teamwork and innovation.",
-                'loadingPeople',
-                'generatedPeopleImage',
-                'errorPeopleText'
-            );
-
-            // Generate "Certificate Template" image
-            generateAndDisplayImage(
-                "A professional and elegant internship certificate template. It should include placeholders for 'Intern's Name', 'Company Name (DR Private Limited)', 'Internship Domain', 'Duration', 'Date of Issue', and a space for signatures. The design should be clean, modern, and suitable for a corporate environment, with a subtle border or watermark featuring a company logo placeholder. Use a sophisticated font.",
-                'loadingCertificate',
-                'generatedCertificateImage',
-                'errorCertificateText'
-            );
         };
     </script>
 </body>
